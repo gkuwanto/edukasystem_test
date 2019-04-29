@@ -58,10 +58,50 @@ func generateUserData() data {
 	return data1
 }
 
+func generateCityID() int {
+	data1 := data{}
+	id := 0
+	for data1.Msg != "ok" {
+		rand.Seed(time.Now().UnixNano())
+		id = rand.Intn(1000)
+		url := "https://api.edukasystem.id/dummy/city/"
+
+		edukaClient := http.Client{
+			Timeout: time.Second * 20,
+		}
+		req, err := http.NewRequest(http.MethodGet, url+strconv.Itoa(id), nil)
+		if err != nil {
+			log.Fatal(err)
+		}
+		req.Header.Set("User-Agent", "edukasystem-web-api-challange")
+
+		res, getErr := edukaClient.Do(req)
+		if getErr != nil {
+			log.Fatal(getErr)
+		}
+
+		body, readErr := ioutil.ReadAll(res.Body)
+		if readErr != nil {
+			log.Fatal(readErr)
+		}
+
+		jsonErr := json.Unmarshal(body, &data1)
+		if jsonErr != nil {
+			log.Fatal(jsonErr)
+		}
+	}
+	return id
+}
+
 func moveUser(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	data1 := generateUserData()
 
-	fmt.Println(data1.Msg)
+	oldCityID := data1.Data.City
+	newCityID := generateCityID()
+
+	fmt.Println(oldCityID)
+	fmt.Println(newCityID)
+
 }
 
 func main() {
