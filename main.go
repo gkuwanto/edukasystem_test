@@ -8,6 +8,7 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -32,6 +33,25 @@ type apiResponse struct {
 	OldCityName string `json:"old_city_name"`
 	NewCityID   int    `json:"new_id_city"`
 	NewCityName string `json:"new_city_name"`
+}
+
+func cleanLog() {
+	for range time.Tick(time.Second * 15) {
+		ioutil.WriteFile("log.txt", []byte(""), 0600)
+	}
+}
+
+func logAPICalls(apiGateway string, request *http.Request) {
+	userAgent := request.Header.Get("User-Agent")
+
+	f, err := os.OpenFile("log.txt", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+	if err != nil {
+		panic(err)
+	}
+
+	defer f.Close()
+
+	fmt.Fprintf(f, "%s %s %s \n", apiGateway, time.Now().Format("01/02/2006 15:04:05"), userAgent)
 }
 
 func generateUserData() data {
@@ -172,6 +192,7 @@ func changeAPI(user int, city int) {
 }
 
 func moveUser(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	go logAPICalls("MagicUpdate", r)
 	data1 := generateUserData()
 
 	oldCityID := data1.Data.City
@@ -198,6 +219,7 @@ type userScore struct {
 type users [5000]userScore
 
 func superSort(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	go logAPICalls("SuperSort", r)
 	db, err := sql.Open("mysql", "guest:codingtest@tcp(data.edukasystem.id:3306)/dummy")
 	if err != nil {
 		log.Fatal(err)
@@ -241,6 +263,7 @@ func superSort(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 }
 
 func main() {
+	go cleanLog()
 	router := httprouter.New()
 	router.GET("/MagicUpdate", moveUser)
 	router.GET("/SuperSorting", superSort)
