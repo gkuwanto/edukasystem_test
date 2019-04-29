@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -19,6 +20,14 @@ type data struct {
 		ID   int `json:"id_user"`
 		City int `json:"id_city"`
 	}
+}
+
+type apiResponse struct {
+	ID          int    `json:"id_user"`
+	OldCityID   int    `json:"old_id_city"`
+	OldCityName string `json:"old_city_name"`
+	NewCityID   int    `json:"new_id_city"`
+	NewCityName string `json:"new_city_name"`
 }
 
 func generateUserData() data {
@@ -133,14 +142,46 @@ func getCityName(id int) string {
 	return city1.Data.Name
 }
 
+func changeAPI(user int, city int) {
+	url := "https://api.edukasystem.id/dummy/user/city"
+
+	var jsonStr = []byte(
+		`{
+			"id_user":` + strconv.Itoa(user) + `,
+			"id_city":` + strconv.Itoa(city) + `
+		}`)
+
+	changeClient := http.Client{
+		Timeout: time.Second * 20,
+	}
+
+	req, err := http.NewRequest("PUT", url, bytes.NewBuffer(jsonStr))
+	req.Header.Set("User-Agent", "eduka")
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := changeClient.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+	body, _ := ioutil.ReadAll(resp.Body)
+	fmt.Println(string(body))
+}
+
 func moveUser(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	data1 := generateUserData()
 
 	oldCityID := data1.Data.City
 	newCityID := generateCityID()
 
-	fmt.Println(getCityName(oldCityID))
-	fmt.Println(getCityName(newCityID))
+	go changeAPI(data1.Data.ID, newCityID)
+	apires := apiResponse{
+		ID:          data1.Data.ID,
+		OldCityID:   oldCityID,
+		OldCityName: getCityName(oldCityID),
+		NewCityID:   newCityID,
+		NewCityName: getCityName(newCityID),
+	}
+	json.NewEncoder(w).Encode(apires)
 
 }
 
