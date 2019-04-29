@@ -185,9 +185,13 @@ func moveUser(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 
 }
 
+func superSort(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	fmt.Fprintf(w, "To be implemented")
+}
+
 func main() {
 	router := httprouter.New()
 	router.GET("/moveuser", moveUser)
-
+	router.GET("/SuperSorting", superSort)
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
