@@ -34,7 +34,9 @@ type apiResponse struct {
 func generateUserData() data {
 	url := "https://api.edukasystem.id/dummy/user/"
 	data1 := data{}
-	id := 300000000
+	var id int
+
+	//randomize the id until it is valid
 	for data1.Msg != "ok" {
 		rand.Seed(time.Now().UnixNano())
 		id = 10000 + rand.Intn(10000)
@@ -68,9 +70,19 @@ func generateUserData() data {
 	return data1
 }
 
+type city struct {
+	Msg  string `json:"message"`
+	Data struct {
+		ID   int    `json:"id_city"`
+		Name string `json:"city_name"`
+	}
+}
+
 func generateCityID() int {
-	data1 := data{}
-	id := 0
+	data1 := city{}
+	var id int
+
+	//randomize id until it is valid
 	for data1.Msg != "ok" {
 		rand.Seed(time.Now().UnixNano())
 		id = rand.Intn(1000)
@@ -101,14 +113,6 @@ func generateCityID() int {
 		}
 	}
 	return id
-}
-
-type city struct {
-	Msg  string `json:"message"`
-	Data struct {
-		ID   int    `json:"id_city"`
-		Name string `json:"city_name"`
-	}
 }
 
 func getCityName(id int) string {

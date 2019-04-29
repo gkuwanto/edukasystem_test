@@ -16,7 +16,38 @@ type userScore struct {
 	Rank  int     `json:"rank"`
 }
 
-type users [5000]userScore
+func merge(left, right []userScore) []userScore {
+	size := len(left) + len(right)
+	i := 0
+	j := 0
+	slice := make([]userScore, size, size)
+
+	for k := 0; k < size; k++ {
+		if i > len(left)-1 && j <= len(right)-1 {
+			slice[k] = right[j]
+			j++
+		} else if j > len(right)-1 && i <= len(left)-1 {
+			slice[k] = left[i]
+			i++
+		} else if left[i].Score > right[j].Score {
+			slice[k] = left[i]
+			i++
+		} else {
+			slice[k] = right[j]
+			j++
+		}
+	}
+	return slice
+}
+
+func mergeSort(slice []userScore) []userScore {
+
+	if len(slice) < 2 {
+		return slice
+	}
+	mid := (len(slice)) / 2
+	return merge(mergeSort(slice[:mid]), mergeSort(slice[mid:]))
+}
 
 func SuperSort(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	go logger.LogAPICalls("SuperSort", r)
@@ -30,7 +61,8 @@ func SuperSort(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	if pingErr != nil {
 		log.Fatal(pingErr)
 	}
-	ranks := users{}
+	var ranks []userScore
+	var user userScore
 
 	rows, queryErr := db.Query("SELECT id_user, score FROM Score")
 	if queryErr != nil {
@@ -39,25 +71,16 @@ func SuperSort(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	defer rows.Close()
 	numOfRows := 0
 	for rows.Next() {
-		scanErr := rows.Scan(&ranks[numOfRows].ID, &ranks[numOfRows].Score)
+		scanErr := rows.Scan(&user.ID, &user.Score)
 		if scanErr != nil {
 			log.Fatal(scanErr)
 		}
-		ranks[numOfRows].Rank = numOfRows + 1
+		ranks = append(ranks, user)
 		numOfRows++
 	}
-	for i := 0; i < 5000; i++ {
-		for j := 0; j < 5000; j++ {
-			if ranks[i].Score > ranks[j].Score {
-				temp := ranks[i].Rank
-				ranks[i].Rank = ranks[j].Rank
-				ranks[j].Rank = temp
-
-				tem := ranks[i]
-				ranks[i] = ranks[j]
-				ranks[j] = tem
-			}
-		}
+	result := mergeSort(ranks)
+	for i := 0; i < numOfRows; i++ {
+		result[i].Rank = i + 1
 	}
-	json.NewEncoder(w).Encode(ranks)
+	json.NewEncoder(w).Encode(result)
 }
