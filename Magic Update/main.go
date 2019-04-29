@@ -93,14 +93,54 @@ func generateCityID() int {
 	return id
 }
 
+type city struct {
+	Msg  string `json:"message"`
+	Data struct {
+		ID   int    `json:"id_city"`
+		Name string `json:"city_name"`
+	}
+}
+
+func getCityName(id int) string {
+	cityurl := "http://api.edukasystem.id/dummy/city/"
+	idString := strconv.Itoa(id)
+	cityClient := http.Client{
+		Timeout: time.Second * 20,
+	}
+	req, err := http.NewRequest(http.MethodGet, cityurl+idString, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	req.Header.Set("User-Agent", "edukasystem-web-api-challange")
+
+	res, getErr := cityClient.Do(req)
+	if getErr != nil {
+		log.Fatal(getErr)
+	}
+
+	body, readErr := ioutil.ReadAll(res.Body)
+	if readErr != nil {
+		log.Fatal(readErr)
+	}
+
+	city1 := city{}
+
+	jsonErr := json.Unmarshal(body, &city1)
+	if jsonErr != nil {
+		log.Fatal(jsonErr)
+	}
+	return city1.Data.Name
+}
+
 func moveUser(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	data1 := generateUserData()
 
 	oldCityID := data1.Data.City
 	newCityID := generateCityID()
 
-	fmt.Println(oldCityID)
-	fmt.Println(newCityID)
+	fmt.Println(getCityName(oldCityID))
+	fmt.Println(getCityName(newCityID))
 
 }
 
