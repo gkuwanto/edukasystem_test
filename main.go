@@ -191,7 +191,7 @@ func superSort(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 
 func main() {
 	router := httprouter.New()
-	router.GET("/moveuser", moveUser)
+	router.GET("/MagicUpdate", moveUser)
 	router.GET("/SuperSorting", superSort)
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
