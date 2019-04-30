@@ -20,4 +20,4 @@ The API first connects to the MySQL server, then runs a query to get the data an
 There is 2 functions that I made for logging, the first is just appending the user agent and access time to a log.txt file, and the other function is to clear the log.txt file every 15 seconds. These functions are called in a seperate thread (goroutines) to save time. Thankfully Golang can handle multithreading pretty easy (just add the go in front of the API call)
 
 #Challenging Parts
-I think that the most challenging part in making this is learning the new libraries and how to use them. Most of the concept that are used in this, I have already used in the past (but in a different language). So I had to google a lot just to get one thing implemented.
+I think that the most challenging part in making this is learning the new libraries and how to use them. Most of the concept that are used in this, I have already used in the past (but in a different language). So I had to google a lot just to get one feature implemented.
