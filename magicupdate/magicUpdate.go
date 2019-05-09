@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/gkuwanto/edukasystem_web_api_golang/logger"
+	"github.com/gkuwanto/edukasystem_test/logger"
 	"github.com/julienschmidt/httprouter"
 )
 
